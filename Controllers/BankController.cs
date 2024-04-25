@@ -15,11 +15,48 @@ namespace apiTest.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+      
+
+
+        [HttpPatch("{id}")]
+        public IActionResult Edit(int id,AddBankRequest request)
         {
-            return View();
+            var bank = _context.BankBranches.Find(id);
+            bank.LocationName = request.Name;
+            bank.BranchManager = request.BranchManger;
+            bank.LocationURL = request.Location;
+            _context.SaveChanges();
+
+            return Created(nameof(Details), new { Id = bank.Id });
         }
 
+        [HttpDelete("{id}")]
+        public IActionResult Delete(int id)
+        {
+            var bank = _context.BankBranches.Find(id);
+            _context.BankBranches.Remove(bank);
+            _context.SaveChanges();
+
+            return Created(nameof(Details), new { Id = bank.Id });
+
+        }
+
+
+
+
+        [HttpGet("{id}")]
+        public ActionResult <BankBranchResponse>  Details(int id)
+        {
+            var bank = _context.BankBranches.Find(id);
+            if (bank == null)
+            {
+                return NotFound();
+            }
+            return new BankBranchResponse {  BranchManger= bank.BranchManager,
+                Location = bank.LocationURL,
+                Name = bank.LocationName };
+
+        }
         [HttpGet]
         public IEnumerable<BankBranch> GetAll()
         {
