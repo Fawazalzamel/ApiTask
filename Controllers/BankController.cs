@@ -58,17 +58,28 @@ namespace apiTest.Controllers
 
         }
         [HttpGet]
-        public IEnumerable<BankBranch> GetAll()
+        public IEnumerable<BankBranch> GetAll(string? searchTerm, [FromQuery] BankFilter filter, int pageNumber = 1, int pageSize = 10)
         {
+            var banks = _context.BankBranches.AsQueryable();
 
-            return _context.BankBranches;
-
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                banks = banks.Where(c => c.LocationName.Contains(searchTerm));
+                var pagedBanks = banks
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+                return pagedBanks;
+            }
+            else return _context.BankBranches;
+         // return Ok(customers.ToList()); 
         }
 
         [HttpPost]
         public IActionResult AddBranch(AddBankRequest request)
         {
-            var branch = new BankBranch() { LocationName = request.Name, LocationURL= request.Location, BranchManager=request.BranchManger };
+            var branch = new BankBranch() { LocationName = request.Name,
+                LocationURL= request.Location,
+                BranchManager=request.BranchManger };
 
             _context.BankBranches.Add(branch);
             _context.SaveChanges();
